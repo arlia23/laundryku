@@ -64,39 +64,41 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    // Memproses registrasi customer
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => [
-                'required',
-                'confirmed',
-                Password::min(8),
-            ],
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
-        ]);
+// Memproses registrasi customer
+public function register(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|max:255|unique:users,email',
+        'password' => [
+            'required',
+            'confirmed',
+            Password::min(8),
+        ],
+        'phone' => 'nullable|string|max:20',
+        'address' => 'nullable|string',
+    ]);
 
-        // Membuat akun customer
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'role' => 'customer',
-            'phone' => $validated['phone'] ?? null,
-            'address' => $validated['address'] ?? null,
-        ]);
+    // Membuat akun customer
+   $user = new User();
 
-        // Login otomatis setelah registrasi
-        Auth::login($user);
+$user->name = $validated['name'];
+$user->email = $validated['email'];
+$user->password = Hash::make($validated['password']);
+$user->role = 'customer';
+$user->phone = $validated['phone'] ?? null;
+$user->address = $validated['address'] ?? null;
 
-        $request->session()->regenerate();
+$user->save();
 
-        return redirect()->route('customer.dashboard')
-    ->with('success', 'Registrasi berhasil!');
-    }
+    // Login otomatis setelah registrasi
+    Auth::login($user);
+
+    $request->session()->regenerate();
+
+    return redirect()->route('customer.dashboard')
+        ->with('success', 'Registrasi berhasil!');
+}
 
     // Logout
     public function logout(Request $request)
